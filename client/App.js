@@ -29,8 +29,8 @@ export default function App() {
     return <SignUp/>
   }
 
-  const PropPublicRoom = () => {
-    return <PublicRoom user={user}/>;
+  const PropPublicRoom = ({ navigation }) => {
+    return <PublicRoom navigation={navigation} user={user}/>;
   }
 
   const PropPrivateRoom = () => {

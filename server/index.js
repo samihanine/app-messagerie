@@ -52,7 +52,7 @@ app.get("/info", (req, res) => {
 
 // get public room
 app.get("/publicroom", (req, res) => {
-  db.query("SELECT * FROM room where type=?;",1,(err, result) => {
+  db.query("SELECT * FROM room;",(err, result) => {
       if (err) {
           res.json({ err: err });
       }
@@ -119,21 +119,58 @@ app.get("/message", (req, res) => {
     })
 });
 
+app.get("/privatemessage", (req, res) => {
+  const id = req.query.id;
+  
+  db.query("SELECT message.id, message.text, message.senddate, user.pseudo, user.image, message.userid FROM message, user where message.conversationid=? and message.userid = user.id;",id,(err, result) => {
+      if (err) {
+          res.json({ err: err });
+      }
+      res.json(result);
+  })
+});
+
 
 app.post("/newmessage", (req, res) => {
     const text = req.body.text;
-    const roomid = req.body.roomid;
     const userid = req.body.userid;
-
+    const roomid = req.body.roomid ? req.body.roomid : 0;
+    const convid = req.body.convid ? req.body.convid : 0;
+   
     db.query(
-      "INSERT INTO `message`(`text`, `userid`, `roomid`,`senddate`) VALUES (?,?,?,now());", [text, userid, roomid],(err, result) => {
+      "INSERT INTO `message`(`text`, `userid`, `roomid`,`conversationid`,`senddate`) VALUES (?,?,?,?,now());", [text, userid, roomid, convid],(err, result) => {
         if (err) {
             res.send({ err: err });
         } else {
-            res.send({ message: "L'envoie du message a bien été prit en compte'." });
+            res.send({ message: "L'envoie du message a bien été prit en compte." });
         }
       }
     );
+  });
+
+  app.post("/newconversation", (req, res) => {
+    const participant1 = req.body.participant1;
+    const participant2 = req.body.participant2;
+
+    db.query(
+      "INSERT INTO `conversation`(`participant1`, `participant2`) VALUES (?,?);",[participant1, participant2],(err, result) => {
+        if (err) {
+            res.send({ err: err });
+        } else {
+            res.send({ message: "La conversation a bien été créée." });
+        }
+      }
+    );
+  });
+
+  app.get("/conversation", (req, res) => {
+    const id = req.query.id;
+    db.query("SELECT conversation.id, user.pseudo, user.image FROM conversation, user where (conversation.participant1=? and user.id=conversation.participant2) or (conversation.participant2=? and user.id=conversation.participant1)",[id,id],(err, result) => {
+        if (err) {
+            res.json({ err: err });
+        }
+        res.json(result);
+    })
   });
 
 // set port, listen for requests

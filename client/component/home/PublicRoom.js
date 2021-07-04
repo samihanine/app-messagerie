@@ -26,12 +26,12 @@ export default function MyStack(props) {
     }
 
     const PropProfile = ({ navigation }) => {
-      return <Profile focusUser={focusUser} navigation={navigation} user={props.user}/>
+      return <Profile focusUser={focusUser} navigation2={props.navigation} navigation={navigation} user={props.user}/>
     }
 
     return (
       <Stack.Navigator>
-        <Stack.Screen name="Salon Public" component={PropRoom} />
+        <Stack.Screen name="Salons Publics" component={PropRoom} />
         <Stack.Screen name="Messages" component={PropMessage} />
         <Stack.Screen name="Profile" component={PropProfile} />
       </Stack.Navigator>

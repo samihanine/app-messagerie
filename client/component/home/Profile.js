@@ -42,11 +42,18 @@ export default function ShowProfile(props) {
       return () => {
 
       }
-  }, [])
+    }, [])
 
-  
+    const newConv = () => {
+      axios.post("http://localhost:3000/newconversation", {
+        participant1: props.user.id,
+        participant2: infos.id,
+      })
+    .then((response) => {
+        console.log(response);
 
-  
+    });
+    }
 
     return (
       <View style={{padding: 10, justifyContent: 'center', flex: 1}}>
@@ -67,8 +74,8 @@ export default function ShowProfile(props) {
 
         <View style={styles.container}>
           {props.user.id != infos.id ?
-            <Button title="Envoyer un message privé" onPress={() => {}}/> :
-            <Button title="Modifier votre profil" onPress={() => {}}/>
+            <Button title="Envoyer un message privé" onPress={newConv}/> :
+            <Button title="Modifier votre profil" onPress={() => props.navigation2.navigate('Mon profil')}/>
           }
         </View>
 
