@@ -1,27 +1,32 @@
 import React from 'react'
-import { View, TextInput, Button, Text, FlatList, Image, StyleSheet,TouchableOpacity } from 'react-native'
+import { View, TextInput, Button, Text, FlatList, Image, StyleSheet,TouchableOpacity, ActivityIndicator } from 'react-native'
 import axios from 'axios';
 import {useState, useEffect} from 'react';
 import {AutoScrollFlatList} from "react-native-autoscroll-flatlist";
 import CicleIcon from '../utilities/CircleIcon';
 
+const serv = "https://pristine-cuyahoga-valley-87633.herokuapp.com/";
+
 export default function Login(props) {
     const user = props.user;
     const currentRoom = props.currentRoom;
+    const currentConv = props.currentConv;
     const navigation = props.navigation;
 
     const [messages,setMessages] = useState(false);
     const [text,setText] = useState("");
+    const [loading,setLoading] = useState(false);
 
     const getMessages = () => {
-        axios.get("http://localhost:3000/message?id=" + currentRoom.id)
+        
+        const url = currentRoom ? serv + "message?id=" + currentRoom.id : serv + "privatemessage?id=" + currentConv.id;
+
+        axios.get(url)
         .then((response) => {
+            setLoading(false);
         if (response.data.message) {
             console.log(response.data.message);
         } else {
-            response.data.sort(function(a,b){
-                return new Date(a.senddate) - new Date(b.senddate);
-            });
             setMessages(response.data);
         }
         });
@@ -29,21 +34,15 @@ export default function Login(props) {
 
     const sendMessage = () => {
         setText("");
-        axios.post("http://localhost:3000/newmessage", {
+        axios.post(serv + "newmessage", {
             text: text,
-            roomid: currentRoom.id,
+            roomid: currentRoom ? currentRoom.id : 0,
+            convid: currentConv ? currentConv.id : 0,
             userid: user.id
           })
         .then((response) => {
-            console.log(response.data.message);
             getMessages();
         });
-    }
-
-    const verify = () => {
-        if (text != "") {
-            sendMessage();
-        }
     }
 
     const goProfile = (id) => {
@@ -64,7 +63,10 @@ export default function Login(props) {
             </View>
             <View>
                 <Text style={[styles.message_pseudo,!other && {textAlign: "right"}]}>{item.pseudo}</Text>
-                <Text style={[styles.message_text,other ? styles.other_message_text : styles.user_message_text]}>{item.text}</Text>
+                <View style={[{backgroundColor: other ? "white" : "#44b3fb"},styles.message_text,other ? {borderBottomLeftRadius:0} : {borderBottomRightRadius:0} ]}>
+                <Text >{item.text}</Text>
+            </View>
+                
             </View>
             
             
@@ -72,6 +74,7 @@ export default function Login(props) {
     }
 
     useEffect(() => {
+        setLoading(true);
         getMessages();
       
         return () => {
@@ -81,25 +84,25 @@ export default function Login(props) {
 
     return (
       <View style={styles.salon}>
-        <Text style={styles.description}>{currentRoom.name}: {currentRoom.description}</Text>
+        {currentRoom && <Text style={styles.description}>{currentRoom.name}: {currentRoom.description}</Text>}
+        
+        <View style={{flex: 1}}>
+            {loading ? <ActivityIndicator style={{flex: 1}} size="large"/> :
 
-        {messages && <AutoScrollFlatList style={styles.all_messages} data={messages} renderItem={renderItem} keyExtractor={item => item.id.toString()} />}
+            messages && <AutoScrollFlatList style={styles.all_messages} data={messages} renderItem={renderItem} keyExtractor={item => item.id.toString()} />
+            }
+        </View>
 
         <View style={styles.send}>
-            <TextInput style={styles.send_input} value={text} onChangeText={(text) => setText(text)} placeholder='Ecrivez votre message'/>
-            <TouchableOpacity style={styles.send_divimage} onPress={() => verify()}>
-                <Image style={styles.send_image} source={{uri:"https://img.icons8.com/ios-filled/300/5ac2d5/paper-plane.png"}}></Image>
+            <TextInput multiline style={styles.send_input} value={text} onChangeText={(text) => setText(text)} placeholder='Ecrivez votre message'/>
+            <TouchableOpacity style={styles.send_divimage} onPress={() => text != "" && sendMessage()}>
+                <Image style={styles.send_image} source={{uri:"https://img.icons8.com/ios-filled/300/4994ec/paper-plane.png"}}></Image>
             </TouchableOpacity>
         </View>
 
       </View>
     )
-
-    // <Button title="Envoyer" onPress={() => verify()}/>
-
 }
-
-// Components/Search.js
 
 const styles = StyleSheet.create({
     salon:{
@@ -114,7 +117,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1
     },
     all_messages:{
-        flex: 1,
+        flex: 1
     },
 
     send: {
@@ -124,16 +127,16 @@ const styles = StyleSheet.create({
         backgroundColor: "white"
     },  
     send_image: {
-        width: "30px",
-        height: "30px",
+        width: 30,
+        height: 30,
         
     },
     send_input: {
-        width: "100%",
+        flex:1,
         paddingLeft: 10
     },
     send_divimage:{
-        padding: "10px",
+        padding: 10,
         borderLeftColor: "#ddd",
         borderLeftWidth: 1
     },
@@ -144,25 +147,30 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end'
     },
     message_text: {
-        width: "200px",
-        borderRadius: 10,
+        width: 200,
+        
         marginBottom: 5,
         padding: 5,
         borderColor: "#c2c2c2",
-        borderWidth: 1
+        borderWidth: 1,
+
+        color: "white",
+  
+        borderRadius: 10,
+
     },
     message_divimage:{
-        padding: "5px",
+        padding: 5,
         borderColor: "#c2c2c2",
         borderWidth: 1,
         backgroundColor: "white",
         borderRadius: 50,
-        marginRight: "8px",
-        marginLeft: "8px"
+        marginRight: 8,
+        marginLeft: 8
     },
     message_image : {
-        width: "30px",
-        height: "30px",
+        width: 30,
+        height: 30,
 
     },
 
@@ -173,25 +181,8 @@ const styles = StyleSheet.create({
         color: "grey"
     },
 
-    message_profil: {
-
-    },
-
-    other_message: {
-        
-    },
     user_message: {
-        marginLeft: "calc(100% - 250px)",
+        
         flexDirection: 'row-reverse'
-    },
-    other_message_text: {
-        backgroundColor: "white",
-        borderBottomLeftRadius: 0,
- 
-    },
-    user_message_text: {
-        backgroundColor: "#5ac2d5",
-        borderBottomRightRadius: 0,
-        color: "white"
     },
   })

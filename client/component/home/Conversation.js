@@ -1,18 +1,24 @@
 
 import React from 'react'
-import { View, TextInput, Button, Text, FlatList, TouchableOpacity, StyleSheet, Image} from 'react-native';
+import { View, TextInput, Button, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import {useState, useEffect} from 'react';
+
+import CicleIcon from '../utilities/CircleIcon';
+const serv = "https://pristine-cuyahoga-valley-87633.herokuapp.com/";
 
 export default function Conversation(props) {
 
   const [convs,setConvs] = useState(false);
   const [infos,setInfos] = useState(false);
   const navigation = props.navigation;
+  const [loading,setLoading] = useState(false);
 
   const getConversation = () => {
-    axios.get("http://localhost:3000/conversation?id=" + props.user.id)
+    setLoading(true);
+    axios.get(serv + "conversation?id=" + props.user.id)
     .then((response) => {
+      setLoading(false);
       if (response.data.message) {
         console.log(error)
       } else {
@@ -31,7 +37,7 @@ export default function Conversation(props) {
   const renderItem = ({ item }) => {
     return <TouchableOpacity style={styles.room} onPress={() => changeRoom(item)}>
 
-          <Image source={{uri: item.image}} style={[styles.room_image]}></Image>
+          <CicleIcon link={item.image}></CicleIcon>
 
         <Text style={styles.room_text}>{item.pseudo}</Text>
     </TouchableOpacity>
@@ -47,8 +53,9 @@ export default function Conversation(props) {
 
   // 
     return (
-      <View>
-        {convs && <FlatList scrollEnabled={true} data={convs} renderItem={renderItem} keyExtractor={item => item.id.toString()} />}
+      <View style={{flex: 1}}>
+        {loading ? <ActivityIndicator style={{flex: 1}} size="large"/>:
+        convs && <FlatList scrollEnabled={true} data={convs} renderItem={renderItem} keyExtractor={item => item.id.toString()} />}
       </View>
     )
 

@@ -1,7 +1,9 @@
 import React from 'react'
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native'
+import { ActivityIndicator, View, TextInput, Button, Text, StyleSheet } from 'react-native'
 import axios from 'axios';
 import {useState} from 'react';
+
+const serv = "https://pristine-cuyahoga-valley-87633.herokuapp.com/";
 
 export default function Login(props) {
 
@@ -9,24 +11,30 @@ export default function Login(props) {
   const [mdp,setMdp] = useState("");
   const [error,setError] = useState(false);
 
+  const [loading,setLoading] = useState(false);
 
   const getUser = () => {
-    axios.post("http://localhost:3000/login", {
+    setLoading(true);
+    axios.post(serv + 'login', {
           pseudo: pseudo,
           mdp: mdp,
         })
     .then((response) => {
+      setLoading(false);
+
       if (response.data.message) {
         setError(response.data.message);
       } else {
         props.setUser(response.data);
       }
+      
     });
   }
 
     return (
       <View style={styles.login}>
-
+        
+        {loading ? <ActivityIndicator size="large" /> :
         <View style={styles.container}>
 
           <View style={styles.input}>
@@ -41,6 +49,7 @@ export default function Login(props) {
 
           <Button title='Se connecter' onPress={getUser}/>
         </View>
+        }
 
       </View>
     )

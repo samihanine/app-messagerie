@@ -6,25 +6,19 @@ import CicleIcon from '../utilities/CircleIcon';
 
 const serv = "https://pristine-cuyahoga-valley-87633.herokuapp.com/";
 
-export default function Profile(props) {
-    const id = props.focusUser;
+export default function EditProfile(props) {
+    const user = props.user;
 
     const [infos, setInfos] = useState(false);
     const [nombre, setNombre] = useState(false);
 
-    const getInfo = () => {
-      axios.get(serv + "info?id=" + id)
-      .then((response) => {
-      if (response.data.message) {
-          console.log(response.data.message);
-      } else {
-          setInfos(response.data[0]);
-      }
-      });
-    }
+
+    const [description, setDescription] = useState(user.description);
+    const [pseudo, setPseudo] = useState(user.pseudo);
+    
 
     const getNombre = () => {
-      axios.get(serv + "countmsg?id=" + id)
+      axios.get(serv + "countmsg?id=" + user.id)
       .then((response) => {
       if (response.data.message) {
           console.log(response.data.message);
@@ -35,7 +29,6 @@ export default function Profile(props) {
     }
 
     useEffect(() => {
-      getInfo();
       getNombre();
     
       return () => {
@@ -43,39 +36,26 @@ export default function Profile(props) {
       }
     }, [])
 
-    const newConv = () => {
-      axios.post(serv + "newconversation", {
-        participant1: props.user.id,
-        participant2: infos.id,
-      })
-    .then((response) => {
-      props.setRootNav(true)
-      props.navigation.navigate('Messages privés', { screen: 'Messages Privées', test: "x" });
-    });
-    }
-
     return (
       <View style={{padding: 10, justifyContent: 'center', flex: 1}}>
 
         <View style={styles.container}>
-          <Text style={{textAlign: 'center', fontSize: 20, color: "#4994ec", marginBottom: 20}}>{infos.pseudo}</Text>
-          {infos.image && <CicleIcon size={70} link={infos.image}/>}
+          <TextInput value={pseudo} onChangeText={(text) => setPseudo(text)} style={{textAlign: 'center', fontSize: 20, color: "#4994ec", marginBottom: 20}}/>
+          <CicleIcon size={70} link={user.image}/>
           
           <Text style={{color: 'grey', marginTop: 20}}>Total des messages envoyés: <Text style={{color: 'black'}}>{nombre}</Text></Text>
-          {infos.creationdate && <Text style={{color: 'grey'}}>Date de création du compte: <Text style={{color: 'black'}}>{infos.creationdate}</Text></Text>}
-
+          <Text style={{color: 'grey'}}>Date de création du compte: <Text style={{color: 'black'}}>{user.creationdate}</Text></Text>
         </View>
 
         <View style={styles.container}>
           <Text style={{color: 'grey', marginBottom:10}}>Description du profil:</Text>
-          <Text style={{fontSize: 18}}>" {infos.description} "</Text>
+          <TextInput value={description} onChangeText={(text) => setDescription(text)} style={{fontSize: 18, width: "100%"}}/>
         </View>
 
         <View style={styles.container}>
-          {props.user.id != infos.id ?
-            <Button title="Envoyer un message privé" onPress={newConv}/> :
-            <Button title="Modifier votre profil" onPress={() => props.navigation2.navigate('Mon profil')}/>
-          }
+          <Button title="Me déconnecter" onPress={() => props.setUser(false)}/>
+          <View style={{height:10}}></View>
+          <Button color="#ff5c5c" title="Supprimer mon compte" onPress={() => {}}/>
         </View>
 
 

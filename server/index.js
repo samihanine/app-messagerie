@@ -149,18 +149,28 @@ app.post("/newmessage", (req, res) => {
   });
 
   app.post("/newconversation", (req, res) => {
-    const participant1 = req.body.participant1;
-    const participant2 = req.body.participant2;
+    const p1 = req.body.participant1;
+    const p2 = req.body.participant2;
 
-    db.query(
-      "INSERT INTO `conversation`(`participant1`, `participant2`) VALUES (?,?);",[participant1, participant2],(err, result) => {
-        if (err) {
-            res.send({ err: err });
-        } else {
-            res.send({ message: "La conversation a bien été créée." });
-        }
+    db.query("SELECT count(*) as nb FROM conversation where (participant1=? and participant2=?) or (participant1=? and participant2=?)",[p1, p2, p2, p1],(err, result) => {
+      if (err) {
+          res.json({ err: err });
       }
-    );
+      if (result[0].nb != 0) {
+        res.send({ message: "La conversation existe déjà.", type: 1 });
+      } else {
+        db.query(
+          "INSERT INTO `conversation`(`participant1`, `participant2`) VALUES (?,?);",[p1, p2],(err, result) => {
+            if (err) {
+                res.send({ err: err });
+            } else {
+                res.send({ message: "La conversation a bien été créée." });
+            }
+          }
+        );
+      }
+  })
+
   });
 
   app.get("/conversation", (req, res) => {

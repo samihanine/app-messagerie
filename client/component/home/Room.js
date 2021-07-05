@@ -1,17 +1,21 @@
 
 import React from 'react'
-import { View, TextInput, Button, Text, FlatList, TouchableOpacity, StyleSheet, Image} from 'react-native'
+import { View, TextInput, Button, Text, FlatList, TouchableOpacity, StyleSheet, Image, ActivityIndicator} from 'react-native'
 import axios from 'axios';
 import {useState, useEffect} from 'react';
+const serv = "https://pristine-cuyahoga-valley-87633.herokuapp.com/";
 
 export default function PublicRoom(props) {
 
   const [rooms,setRooms] = useState(false);
   const navigation = props.navigation;
+  const [loading,setLoading] = useState(false);
 
   const getPublicRoom = () => {
-    axios.get("http://localhost:3000/publicroom")
+    setLoading(true);
+    axios.get(serv + "publicroom")
     .then((response) => {
+      setLoading(false);
       if (response.data.message) {
         console.log(error)
       } else {
@@ -46,8 +50,9 @@ export default function PublicRoom(props) {
 
 
     return (
-      <View>
-        {rooms && <FlatList scrollEnabled={true} data={rooms} renderItem={renderItem} keyExtractor={item => item.id.toString()} />}
+      <View style={{flex: 1}}>
+        {loading ? <ActivityIndicator style={{flex: 1}} size="large"/> :
+        rooms && <FlatList scrollEnabled={true} data={rooms} renderItem={renderItem} keyExtractor={item => item.id.toString()} />}
       </View>
     )
 

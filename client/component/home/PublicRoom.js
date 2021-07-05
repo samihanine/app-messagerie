@@ -26,7 +26,7 @@ export default function MyStack(props) {
     }
 
     const PropProfile = ({ navigation }) => {
-      return <Profile focusUser={focusUser} navigation2={props.navigation} navigation={navigation} user={props.user}/>
+      return <Profile setRootNav={props.setRootNav} focusUser={focusUser} navigation2={props.navigation} navigation={navigation} user={props.user}/>
     }
 
     return (

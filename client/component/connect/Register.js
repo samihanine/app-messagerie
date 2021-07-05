@@ -4,6 +4,8 @@ import axios from 'axios';
 import {useState} from 'react';
 import CicleIcon from '../utilities/CircleIcon';
 
+const serv = "https://pristine-cuyahoga-valley-87633.herokuapp.com/";
+
 export default function Login(props) {
 
   const [error,setError] = useState(false);
@@ -31,7 +33,7 @@ export default function Login(props) {
 
 
   const signUser = () => {
-    axios.post("http://localhost:3000/signup", {
+    axios.post(serv + "signup", {
           pseudo: pseudo,
           mdp: mdp,
           mail: mail,
@@ -76,7 +78,7 @@ export default function Login(props) {
               <TextInput style={styles.input} onChangeText={(text) => setDescription(text)} placeholder='Description'/>
           </View>
 
-          <View style={[styles.perso, styles.container]}>
+          <View style={styles.container}>
 
 
             <Text style={styles.text}>Créer votre photo de profil</Text>
@@ -164,9 +166,7 @@ const styles = StyleSheet.create({
 
   },
 
-perso: {
-  justifyContent: "center",
-},
+
 container: {
   backgroundColor: "white",
   padding: 8,
@@ -209,3 +209,21 @@ input: {
 }
 
 })
+
+const getUser = () => {
+  setLoading(true);
+  axios.post(serv + 'login', {
+        pseudo: pseudo,
+        mdp: mdp,
+      })
+  .then((response) => {
+    setLoading(false);
+
+    if (response.data.message) {
+      setError(response.data.message);
+    } else {
+      props.setUser(response.data);
+    }
+    
+  });
+}
